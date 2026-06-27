@@ -33,7 +33,11 @@ Gradient-weighted Class Activation Mapping (Grad-CAM) was applied to visualize w
 
 ![Grad-CAM Heatmap](results/gradcam.png)
 
-**Findings:** For pneumonia cases, the model predominantly activates over the right lower lung field — consistent with the typical distribution of lobar pneumonia in the training population (predominantly pediatric). Notably, some activation appears along the lateral chest wall margin, suggesting the model may partially rely on peripheral soft tissue density as a correlate of consolidation. This is an acknowledged limitation and an area for future refinement.
+**Findings:** For this pneumonia case, Grad-CAM activation concentrates in the **lower thorax and subdiaphragmatic region** rather than the lung fields — the model is not localizing to pulmonary consolidation as intended. This is a meaningful limitation: rather than learning intrapulmonary findings (e.g., lobar consolidation, increased opacity), the model appears to be exploiting correlates in the lower chest wall and upper abdomen, likely reflecting the pediatric body habitus dominant in this dataset (prominent liver silhouette, large thymus, or diaphragm position).
+
+This pattern is consistent with **shortcut learning** — the model achieves high AUC by latching onto features that co-vary with pneumonia in the training population but lack clinical interpretability. Plausible shortcuts include subcutaneous soft tissue density, diaphragm curvature, or abdominal organ silhouette, all of which differ systematically between pediatric pneumonia and normal cases independent of pulmonary findings.
+
+This is an acknowledged limitation that tempers the clinical relevance of the reported metrics. Addressing it would require full backbone fine-tuning on radiology-specific data, lung segmentation as a preprocessing step to constrain the model's field of view, or training on a more demographically diverse dataset.
 
 ---
 
@@ -118,13 +122,13 @@ The final notebook cells handle model reload, test set evaluation, and Grad-CAM 
 
 ## Limitations & Future Work
 
+- **Shortcut learning:** Grad-CAM reveals activation in the subdiaphragmatic region rather than the lung fields, suggesting the model exploits body habitus correlates rather than true pulmonary findings
 - **Dataset bias:** Training images are predominantly pediatric; adult pneumonia patterns (e.g., interstitial, atypical) may not generalize well
 - **Binary classification only:** Does not distinguish bacterial vs. viral pneumonia, or other pathologies (effusion, atelectasis)
-- **Frozen backbone:** Only the classifier head is trained; full fine-tuning may improve performance
-- **Edge activation artifact:** Grad-CAM reveals some lateral border activation — possible shortcut learning from soft tissue silhouettes rather than purely intrapulmonary findings
+- **Frozen backbone:** Only the classifier head is trained; full fine-tuning on radiology-specific data may improve both performance and interpretability
 - **No external validation:** Model has not been tested on out-of-distribution data (different scanners, patient populations)
 
-**Potential next steps:** Full backbone fine-tuning, multi-class pathology detection (NIH ChestX-ray14 dataset), attention-based architectures (Vision Transformer), prospective clinical validation framework
+**Potential next steps:** Full backbone fine-tuning, lung segmentation preprocessing to constrain the model's field of view, multi-class pathology detection (NIH ChestX-ray14 dataset), attention-based architectures (Vision Transformer), prospective clinical validation framework
 
 ---
 
@@ -137,6 +141,6 @@ This model is a research/educational project and is **not validated for clinical
 ## Author
 
 M1 Medical Student  
-Built independently as a portfolio project
+Built independently as a portfolio project  
 Tools: Python, PyTorch, Google Colab, pytorch-grad-cam
 
